@@ -1,0 +1,5 @@
+{
+  "name": "Audio Compressor",
+  "description": "Interaktive Simulation eines Audio-Kompressors. Visualisiert Wellenformen, Gain Reduction und Attack/Release-Verhalten.",
+  "requestFramePermissions": []
+}
