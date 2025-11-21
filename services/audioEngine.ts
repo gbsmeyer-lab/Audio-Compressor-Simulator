@@ -140,6 +140,7 @@ export const processAudio = (
  */
 export const createAudioBuffer = (ctx: AudioContext, data: Float32Array): AudioBuffer => {
   const buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
-  buffer.copyToChannel(data, 0);
+  // Cast to any to bypass strict ArrayBuffer vs ArrayBufferLike mismatch in Vercel/CI build environments
+  buffer.copyToChannel(data as any, 0);
   return buffer;
 };
