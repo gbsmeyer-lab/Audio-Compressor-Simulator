@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Visualizer from './components/Visualizer';
 import KnobControl from './components/KnobControl';
+import TransferCurve from './components/TransferCurve';
 import { CompressorParams, ProcessedAudioData } from './types';
 import { generateTestSignal, processAudio, createAudioBuffer } from './services/audioEngine';
 import { Play, Pause, RotateCcw, Layers, Power, Sparkles } from 'lucide-react';
@@ -22,6 +23,7 @@ const App: React.FC = () => {
   const [showOriginal, setShowOriginal] = useState(false);
   const [isBypass, setIsBypass] = useState(false);
   const [isDiscoMode, setIsDiscoMode] = useState(false);
+  const [limitThreshold, setLimitThreshold] = useState(0); // 0 = Max, basically off in digital
   
   // Max GR Peak Hold
   const [displayMaxGR, setDisplayMaxGR] = useState(0);
@@ -154,11 +156,12 @@ const App: React.FC = () => {
 
   const resetParams = () => {
     setParams(DEFAULT_PARAMS);
+    setLimitThreshold(0);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-8 font-sans text-slate-200 selection:bg-cyan-500/30">
-      <div className="max-w-6xl mx-auto flex flex-col gap-6">
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-slate-800 pb-4">
@@ -167,7 +170,7 @@ const App: React.FC = () => {
               Audio Compressor {isDiscoMode ? 'PARTY!' : ''}
             </h1>
             <p className="text-slate-400 mt-1 text-sm">
-              Visualisierung der Dynamikbearbeitung.
+              Interaktive Simulation: Wellenform & Kennlinie.
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -180,73 +183,95 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Visualizer Area */}
-        <section className="flex flex-col gap-4">
-          <Visualizer 
-            data={data} 
-            threshold={params.threshold} 
-            isPlaying={isPlaying}
-            audioContext={audioContext}
-            syncTimeRef={syncTimeRef}
-            showInputOverlay={showOriginal}
-            isDiscoMode={isDiscoMode}
-          />
+        {/* Visualization Area - Split Layout */}
+        <section className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[340px]">
           
-          <div className="flex flex-wrap justify-center items-center gap-4 bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+          {/* Main Waveform Visualizer (Takes more space) */}
+          <div className="flex-grow h-[300px] lg:h-full flex flex-col gap-2">
+            <Visualizer 
+              data={data} 
+              threshold={params.threshold} 
+              isPlaying={isPlaying}
+              audioContext={audioContext}
+              syncTimeRef={syncTimeRef}
+              showInputOverlay={showOriginal}
+              isDiscoMode={isDiscoMode}
+            />
             
-            {/* Toggle Input Overlay */}
-            <button
-              onClick={() => setShowOriginal(!showOriginal)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                showOriginal 
-                  ? 'bg-orange-500/10 text-orange-400 border-orange-500/50' 
-                  : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
-              }`}
-              title="Zeige originale Wellenform in Orange"
-            >
-              <Layers size={18} />
-              {showOriginal ? 'Hide Input' : 'Show Input'}
-            </button>
+            {/* Toolbar under visualizer */}
+            <div className="flex flex-wrap justify-center items-center gap-3 bg-slate-900/50 p-2 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                  showOriginal 
+                    ? 'bg-orange-500/10 text-orange-400 border-orange-500/50' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
+                }`}
+              >
+                <Layers size={16} />
+                {showOriginal ? 'Hide Input' : 'Show Input'}
+              </button>
 
-            {/* Transport */}
-            <button 
-              onClick={togglePlay}
-              className={`flex items-center gap-2 px-8 py-3 rounded-full font-bold transition-all transform hover:scale-105 ${
-                isPlaying 
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30' 
-                  : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
-              }`}
-            >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} fill="currentColor" />}
-              {isPlaying ? 'Stop Loop' : 'Start Loop'}
-            </button>
+              <button 
+                onClick={togglePlay}
+                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                  isPlaying 
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30' 
+                    : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+                }`}
+              >
+                {isPlaying ? <Pause size={16} /> : <Play size={16} fill="currentColor" />}
+                {isPlaying ? 'Stop' : 'Start Loop'}
+              </button>
 
-            {/* Bypass */}
-            <button
-              onClick={toggleBypass}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                isBypass 
-                  ? 'bg-orange-500 text-white border-orange-600 shadow-[0_0_10px_rgba(249,115,22,0.4)]' 
-                  : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
-              }`}
-              title="Kompressor umgehen (Original hören)"
-            >
-              <Power size={18} />
-              {isBypass ? 'Bypass ACTIVE' : 'Bypass'}
-            </button>
+              <button
+                onClick={toggleBypass}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                  isBypass 
+                    ? 'bg-orange-500 text-white border-orange-600 shadow-[0_0_10px_rgba(249,115,22,0.4)]' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
+                }`}
+              >
+                <Power size={16} />
+                {isBypass ? 'Bypass ON' : 'Bypass'}
+              </button>
 
-             {/* Reset */}
-             <button 
-              onClick={resetParams}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-              title="Reset to default"
-            >
-              <RotateCcw size={18} />
-            </button>
+              <button 
+                onClick={resetParams}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                title="Reset to default"
+              >
+                <RotateCcw size={16} />
+              </button>
+
+               {/* MOVED DISCO BUTTON HERE */}
+               <button
+                  onClick={() => setIsDiscoMode(!isDiscoMode)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                    isDiscoMode
+                      ? 'bg-fuchsia-900/40 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.5)]'
+                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-fuchsia-500/50 hover:text-fuchsia-400'
+                  }`}
+                  title="Party Mode"
+                >
+                  <Sparkles size={16} className={isDiscoMode ? 'animate-spin' : ''} />
+                  <span>Disco</span>
+                </button>
+            </div>
+          </div>
+
+          {/* Transfer Curve (Fixed width on Large, full on mobile) */}
+          <div className="w-full lg:w-[340px] h-[300px] lg:h-full flex-shrink-0">
+            <TransferCurve 
+              threshold={params.threshold}
+              ratio={params.ratio}
+              makeupGain={params.makeupGain}
+              limitThreshold={limitThreshold}
+            />
           </div>
         </section>
 
-        {/* Controls Grid - Adjusted to 6 cols for large screens to fit Disco button */}
+        {/* Controls Grid */}
         <section className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 bg-slate-900/50 p-6 rounded-2xl border border-slate-800/50 transition-opacity duration-300 ${isBypass ? 'opacity-50 grayscale-[0.5]' : 'opacity-100'}`}>
           
           <KnobControl
@@ -256,7 +281,7 @@ const App: React.FC = () => {
             max={0}
             unit="dB"
             onChange={(v) => setParams(p => ({ ...p, threshold: v }))}
-            description="Schwellenwert. Ab diesem Pegel beginnt der Kompressor zu arbeiten."
+            description="Ab welchem Pegel der Kompressor greift."
           />
 
           <KnobControl
@@ -267,7 +292,7 @@ const App: React.FC = () => {
             step={0.5}
             unit=":1"
             onChange={(v) => setParams(p => ({ ...p, ratio: v }))}
-            description="Verhältnis. Bestimmt, wie stark das Signal über dem Threshold reduziert wird."
+            description="Wie stark das Signal über der Schwelle reduziert wird."
           />
 
           <KnobControl
@@ -278,7 +303,7 @@ const App: React.FC = () => {
             step={0.1}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, attack: v }))}
-            description="Einschwingzeit. Wie schnell die Gain Reduction einsetzt."
+            description="Zeit bis zur vollen Gain Reduction."
           />
 
           <KnobControl
@@ -289,7 +314,7 @@ const App: React.FC = () => {
             step={10}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, release: v }))}
-            description="Ausschwingzeit. Wie schnell der Kompressor nach der Pegelspitze 'loslässt'."
+            description="Zeit bis zum Loslassen nach dem Pegelabfall."
           />
 
           <KnobControl
@@ -300,23 +325,20 @@ const App: React.FC = () => {
             step={0.5}
             unit="dB"
             onChange={(v) => setParams(p => ({ ...p, makeupGain: v }))}
-            description="Aufholverstärkung. Gleicht den Pegelverlust durch die Kompression aus."
+            description="Pegelaufholung nach der Kompression."
           />
 
-          {/* DISCO BUTTON */}
-          <div className="flex flex-col justify-center items-center bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-md group hover:border-slate-600 transition-colors h-full min-h-[120px]">
-            <button
-              onClick={() => setIsDiscoMode(!isDiscoMode)}
-              className={`w-full h-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-300 ${
-                isDiscoMode
-                  ? 'bg-fuchsia-900/40 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-95'
-                  : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-fuchsia-500/50 hover:text-fuchsia-400'
-              }`}
-            >
-              <Sparkles size={32} className={isDiscoMode ? 'animate-spin' : ''} style={{ animationDuration: '3s' }} />
-              <span className="font-bold text-lg tracking-widest">DISCO!</span>
-            </button>
-          </div>
+          {/* NEW LIMIT CONTROL (Replaces Disco) */}
+          <KnobControl
+            label="Limit"
+            value={limitThreshold}
+            min={-24}
+            max={0}
+            step={0.5}
+            unit="dB"
+            onChange={(v) => setLimitThreshold(v)}
+            description="Visuelle Begrenzung des Ausgangspegels (nur Kennlinie)."
+          />
 
         </section>
       </div>

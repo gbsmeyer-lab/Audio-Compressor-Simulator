@@ -216,12 +216,12 @@ const Visualizer: React.FC<VisualizerProps> = ({
   }, [data, threshold, isPlaying, showInputOverlay, audioContext, isDiscoMode]); // added isDiscoMode
 
   return (
-    <div className={`relative w-full bg-slate-950 rounded-xl border overflow-hidden shadow-inner transition-colors duration-500 ${isDiscoMode ? 'border-fuchsia-500 shadow-[0_0_30px_rgba(217,70,239,0.3)]' : 'border-slate-800'}`}>
+    <div className={`relative w-full h-full bg-slate-950 rounded-xl border overflow-hidden shadow-inner transition-colors duration-500 ${isDiscoMode ? 'border-fuchsia-500 shadow-[0_0_30px_rgba(217,70,239,0.3)]' : 'border-slate-800'}`}>
       <canvas 
         ref={canvasRef}
         width={1200} 
         height={300} 
-        className="w-full h-64 object-cover block"
+        className="w-full h-full object-cover block"
       />
       
       {/* Legend Overlay */}

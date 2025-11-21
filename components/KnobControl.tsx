@@ -41,7 +41,7 @@ const KnobControl: React.FC<KnobControlProps> = ({
       />
       
       {description && (
-        <p className="text-xs text-slate-500 mt-1 h-8 leading-tight">
+        <p className="text-xs text-slate-300 mt-1 h-8 leading-tight">
           {description}
         </p>
       )}
