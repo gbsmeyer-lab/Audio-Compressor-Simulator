@@ -160,34 +160,31 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-8 font-sans text-slate-200 selection:bg-cyan-500/30">
-      <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="min-h-screen bg-slate-950 p-2 md:p-4 font-sans text-slate-200 selection:bg-cyan-500/30 flex items-center justify-center">
+      <div className="w-full max-w-7xl flex flex-col gap-3">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-row justify-between items-center border-b border-slate-800 pb-2">
           <div>
-            <h1 className={`text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r transition-all duration-500 ${isDiscoMode ? 'from-fuchsia-400 via-yellow-400 to-cyan-400 animate-pulse' : 'from-cyan-400 to-blue-500'}`}>
+            <h1 className={`text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r transition-all duration-500 ${isDiscoMode ? 'from-fuchsia-400 via-yellow-400 to-cyan-400 animate-pulse' : 'from-cyan-400 to-blue-500'}`}>
               Audio Compressor {isDiscoMode ? 'PARTY!' : ''}
             </h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              Interaktive Simulation: Wellenform & Kennlinie.
-            </p>
           </div>
           <div className="flex items-center gap-4">
-             <div className="bg-slate-900 p-3 rounded-lg border border-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                <div className="text-xs text-red-400 font-bold uppercase tracking-widest mb-1">Max Gain Reduction</div>
-                <div className="text-2xl font-mono text-red-500 tracking-tighter">
-                  {displayMaxGR.toFixed(1)} <span className="text-base">dB</span>
+             <div className="bg-slate-900 px-3 py-1 rounded-lg border border-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.1)] flex flex-col items-end">
+                <div className="text-[10px] text-red-400 font-bold uppercase tracking-widest leading-none mb-0.5">Max GR</div>
+                <div className="text-lg leading-none font-mono text-red-500 tracking-tighter">
+                  {displayMaxGR.toFixed(1)} <span className="text-xs">dB</span>
                 </div>
              </div>
           </div>
         </div>
 
-        {/* Visualization Area - Split Layout */}
-        <section className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[340px]">
+        {/* Visualization Area - Side by Side on all screens if possible */}
+        <section className="flex flex-row gap-2 md:gap-4 h-[220px] sm:h-[280px] lg:h-[300px]">
           
-          {/* Main Waveform Visualizer (Takes more space) */}
-          <div className="flex-grow h-[300px] lg:h-full flex flex-col gap-2">
+          {/* Main Waveform Visualizer */}
+          <div className="flex-grow h-full flex flex-col gap-2 min-w-0">
             <Visualizer 
               data={data} 
               threshold={params.threshold} 
@@ -199,69 +196,69 @@ const App: React.FC = () => {
             />
             
             {/* Toolbar under visualizer */}
-            <div className="flex flex-wrap justify-center items-center gap-3 bg-slate-900/50 p-2 rounded-xl border border-slate-800">
+            <div className="flex flex-wrap justify-center items-center gap-2 bg-slate-900/50 p-1.5 rounded-xl border border-slate-800">
               <button
                 onClick={() => setShowOriginal(!showOriginal)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-medium transition-colors border ${
                   showOriginal 
                     ? 'bg-orange-500/10 text-orange-400 border-orange-500/50' 
                     : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
                 }`}
               >
-                <Layers size={16} />
-                {showOriginal ? 'Hide Input' : 'Show Input'}
+                <Layers size={14} />
+                <span className="hidden sm:inline">{showOriginal ? 'Hide Input' : 'Show Input'}</span>
+                <span className="sm:hidden">{showOriginal ? 'Hide' : 'Show'}</span>
               </button>
 
               <button 
                 onClick={togglePlay}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all transform hover:scale-105 ${
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all transform hover:scale-105 ${
                   isPlaying 
                     ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30' 
                     : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
                 }`}
               >
-                {isPlaying ? <Pause size={16} /> : <Play size={16} fill="currentColor" />}
-                {isPlaying ? 'Stop' : 'Start Loop'}
+                {isPlaying ? <Pause size={14} /> : <Play size={14} fill="currentColor" />}
+                {isPlaying ? 'Stop' : 'Start'}
               </button>
 
               <button
                 onClick={toggleBypass}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-medium transition-colors border ${
                   isBypass 
                     ? 'bg-orange-500 text-white border-orange-600 shadow-[0_0_10px_rgba(249,115,22,0.4)]' 
                     : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
                 }`}
               >
-                <Power size={16} />
+                <Power size={14} />
                 {isBypass ? 'Bypass ON' : 'Bypass'}
               </button>
 
               <button 
                 onClick={resetParams}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg font-medium text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
                 title="Reset to default"
               >
-                <RotateCcw size={16} />
+                <RotateCcw size={14} />
               </button>
 
-               {/* MOVED DISCO BUTTON HERE */}
                <button
                   onClick={() => setIsDiscoMode(!isDiscoMode)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-medium transition-colors border ${
                     isDiscoMode
                       ? 'bg-fuchsia-900/40 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.5)]'
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-fuchsia-500/50 hover:text-fuchsia-400'
                   }`}
                   title="Party Mode"
                 >
-                  <Sparkles size={16} className={isDiscoMode ? 'animate-spin' : ''} />
-                  <span>Disco</span>
+                  <Sparkles size={14} className={isDiscoMode ? 'animate-spin' : ''} />
+                  <span className="hidden sm:inline">Disco</span>
                 </button>
             </div>
           </div>
 
-          {/* Transfer Curve (Fixed width on Large, full on mobile) */}
-          <div className="w-full lg:w-[340px] h-[300px] lg:h-full flex-shrink-0">
+          {/* Transfer Curve (Percentage width with min/max constraints) */}
+          <div className="w-[35%] min-w-[120px] max-w-[340px] h-full flex-shrink-0">
             <TransferCurve 
               threshold={params.threshold}
               ratio={params.ratio}
@@ -271,8 +268,8 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        {/* Controls Grid */}
-        <section className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 bg-slate-900/50 p-6 rounded-2xl border border-slate-800/50 transition-opacity duration-300 ${isBypass ? 'opacity-50 grayscale-[0.5]' : 'opacity-100'}`}>
+        {/* Controls Grid - Compact */}
+        <section className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 bg-slate-900/50 p-3 rounded-2xl border border-slate-800/50 transition-opacity duration-300 ${isBypass ? 'opacity-50 grayscale-[0.5]' : 'opacity-100'}`}>
           
           <KnobControl
             label="Threshold"
@@ -292,7 +289,7 @@ const App: React.FC = () => {
             step={0.5}
             unit=":1"
             onChange={(v) => setParams(p => ({ ...p, ratio: v }))}
-            description="Wie stark das Signal über der Schwelle reduziert wird."
+            description="Reduktion über der Schwelle."
           />
 
           <KnobControl
@@ -303,7 +300,7 @@ const App: React.FC = () => {
             step={0.1}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, attack: v }))}
-            description="Zeit bis zur vollen Gain Reduction."
+            description="Reaktionszeit."
           />
 
           <KnobControl
@@ -314,7 +311,7 @@ const App: React.FC = () => {
             step={10}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, release: v }))}
-            description="Zeit bis zum Loslassen nach dem Pegelabfall."
+            description="Rückkehrzeit."
           />
 
           <KnobControl
@@ -325,10 +322,9 @@ const App: React.FC = () => {
             step={0.5}
             unit="dB"
             onChange={(v) => setParams(p => ({ ...p, makeupGain: v }))}
-            description="Pegelaufholung nach der Kompression."
+            description="Lautstärkeausgleich."
           />
 
-          {/* NEW LIMIT CONTROL (Replaces Disco) */}
           <KnobControl
             label="Limit"
             value={limitThreshold}
@@ -337,7 +333,7 @@ const App: React.FC = () => {
             step={0.5}
             unit="dB"
             onChange={(v) => setLimitThreshold(v)}
-            description="Visuelle Begrenzung des Ausgangspegels (nur Kennlinie)."
+            description="Maximalpegel (Kennlinie)."
           />
 
         </section>
