@@ -45,9 +45,8 @@ const Visualizer: React.FC<VisualizerProps> = ({
         // @ts-ignore - outputLatency is experimental but useful here
         const sysLatency = (audioContext as any).outputLatency || (audioContext as any).baseLatency || 0;
         
-        // Manual offset to delay cursor further as requested (compensating for additional system/browser buffering)
-        // Previous was 0.18, added 0.04 = 0.22
-        const manualOffset = 0.22; 
+        // Manual offset adjusted to reduce delay by 400ms (0.22 - 0.4 = -0.18)
+        const manualOffset = -0.18; 
         const totalLatency = sysLatency + manualOffset;
         
         // We subtract latency because "now" is scheduling time. 
