@@ -19,10 +19,14 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
     const width = canvas.width;
     const height = canvas.height;
     
-    // Increased padding to make room for labels
-    const padding = 40; 
-    const graphWidth = width - padding * 2;
-    const graphHeight = height - padding * 2;
+    // Define margins explicitly to ensure labels fit
+    const marginTop = 20;
+    const marginRight = 20;
+    const marginBottom = 50; // Increased space for X-axis labels
+    const marginLeft = 40;   // Space for Y-axis labels
+
+    const graphWidth = width - marginLeft - marginRight;
+    const graphHeight = height - marginTop - marginBottom;
 
     // Clear
     ctx.clearRect(0, 0, width, height);
@@ -39,14 +43,14 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
     const dbToX = (db: number) => {
       const clamped = Math.max(minDb, Math.min(maxDb, db));
       const norm = (clamped - minDb) / dbRange;
-      return padding + norm * graphWidth;
+      return marginLeft + norm * graphWidth;
     };
 
     const dbToY = (db: number) => {
       // Visual clamping for Y so lines don't fly off canvas
       // But we allow drawing slightly outside range to show clipping
       const norm = (db - minDb) / dbRange;
-      return height - padding - (norm * graphHeight); // Y is inverted
+      return height - marginBottom - (norm * graphHeight); // Y is inverted relative to bottom margin
     };
 
     // --- GRID & AXIS ---
@@ -57,31 +61,31 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
     // Vertical lines (Input)
     for (let db = minDb; db <= maxDb; db += 10) {
       const x = dbToX(db);
-      ctx.moveTo(x, padding);
-      ctx.lineTo(x, height - padding);
+      ctx.moveTo(x, marginTop);
+      ctx.lineTo(x, height - marginBottom);
       
       // Labels - WHITE / BRIGHT
       if (db !== minDb) {
         ctx.fillStyle = '#ffffff'; 
         ctx.font = '10px monospace';
         ctx.textAlign = 'center';
-        // Draw numbers slightly below the axis line
-        ctx.fillText(db.toString(), x, height - padding + 15);
+        // Draw numbers below the axis line
+        ctx.fillText(db.toString(), x, height - marginBottom + 15);
       }
     }
 
     // Horizontal lines (Output)
     for (let db = minDb; db <= maxDb; db += 10) {
       const y = dbToY(db);
-      ctx.moveTo(padding, y);
-      ctx.lineTo(width - padding, y);
+      ctx.moveTo(marginLeft, y);
+      ctx.lineTo(width - marginRight, y);
 
       // Labels - WHITE / BRIGHT
       if (db !== minDb) {
         ctx.fillStyle = '#ffffff';
         ctx.font = '10px monospace';
         ctx.textAlign = 'right';
-        ctx.fillText(db.toString(), padding - 8, y + 3);
+        ctx.fillText(db.toString(), marginLeft - 8, y + 3);
       }
     }
     ctx.stroke();
@@ -91,11 +95,12 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
     ctx.fillStyle = '#ffffff'; 
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    // Position X Axis Title at the very bottom
-    ctx.fillText("INPUT (dB)", width / 2, height - 5);
+    
+    // Position X Axis Title at the bottom area
+    ctx.fillText("INPUT (dB)", marginLeft + (graphWidth / 2), height - 15);
     
     // Position Y Axis Title
-    ctx.translate(12, height / 2);
+    ctx.translate(15, marginTop + (graphHeight / 2));
     ctx.rotate(-Math.PI / 2);
     ctx.fillText("OUTPUT (dB)", 0, 0);
     ctx.restore();
@@ -156,15 +161,15 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
         ctx.strokeStyle = '#ef4444'; // Red
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 2]);
-        ctx.moveTo(padding, limitY);
-        ctx.lineTo(width - padding, limitY);
+        ctx.moveTo(marginLeft, limitY);
+        ctx.lineTo(width - marginRight, limitY);
         ctx.stroke();
         ctx.setLineDash([]);
         
         ctx.fillStyle = '#ef4444';
         ctx.font = '9px monospace';
         // Position text slightly above the red line
-        ctx.fillText("LIMIT", width - padding - 25, limitY - 4);
+        ctx.fillText("LIMIT", width - marginRight - 25, limitY - 4);
     }
 
     // --- THRESHOLD POINT ---
@@ -186,7 +191,7 @@ const TransferCurve: React.FC<TransferCurveProps> = ({ threshold, ratio, makeupG
     ctx.lineWidth = 1;
     ctx.globalAlpha = 0.5;
     ctx.moveTo(kneeInputX, kneeOutputY);
-    ctx.lineTo(kneeInputX, height - padding); // Drop to X axis line
+    ctx.lineTo(kneeInputX, height - marginBottom); // Drop to X axis line
     ctx.stroke();
     ctx.globalAlpha = 1.0;
 

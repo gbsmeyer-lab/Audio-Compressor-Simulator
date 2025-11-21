@@ -278,7 +278,7 @@ const App: React.FC = () => {
             max={0}
             unit="dB"
             onChange={(v) => setParams(p => ({ ...p, threshold: v }))}
-            description="Ab welchem Pegel der Kompressor greift."
+            description="Pegelschwelle ab welcher Kompressor arbeiten soll"
           />
 
           <KnobControl
@@ -289,7 +289,7 @@ const App: React.FC = () => {
             step={0.5}
             unit=":1"
             onChange={(v) => setParams(p => ({ ...p, ratio: v }))}
-            description="Reduktion über der Schwelle."
+            description="Kompressionsverhältnis"
           />
 
           <KnobControl
@@ -300,7 +300,7 @@ const App: React.FC = () => {
             step={0.1}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, attack: v }))}
-            description="Reaktionszeit."
+            description="Reaktionszeit (Übertritt der Schwelle)"
           />
 
           <KnobControl
@@ -311,7 +311,7 @@ const App: React.FC = () => {
             step={10}
             unit="ms"
             onChange={(v) => setParams(p => ({ ...p, release: v }))}
-            description="Rückkehrzeit."
+            description="Reaktionszeit (Unterschreiten der Schwelle)"
           />
 
           <KnobControl
@@ -322,7 +322,7 @@ const App: React.FC = () => {
             step={0.5}
             unit="dB"
             onChange={(v) => setParams(p => ({ ...p, makeupGain: v }))}
-            description="Lautstärkeausgleich."
+            description="Ausgangverstärkung NACH Kompression"
           />
 
           <KnobControl
@@ -333,7 +333,7 @@ const App: React.FC = () => {
             step={0.5}
             unit="dB"
             onChange={(v) => setLimitThreshold(v)}
-            description="Maximalpegel (Kennlinie)."
+            description="Maximalpegel"
           />
 
         </section>
